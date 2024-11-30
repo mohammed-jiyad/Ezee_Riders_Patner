@@ -1,23 +1,168 @@
-import 'package:bikeapp/Registration/AddBankAccount.dart';
-import 'package:bikeapp/Registration/AddVehicle.dart';
-import 'package:bikeapp/Registration/AddVehicleRC.dart';
-import 'package:bikeapp/Registration/DrivingLicenseScreen.dart';
-import 'package:bikeapp/Registration/IdentifyVerification.dart';
-import 'package:bikeapp/Registration/SelfieScreen.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class ActivationStepsScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> steps = [
-    {'title': 'Profile Info', 'isUnlocked': true,'navigate':SelfieScreen()},
-    {'title': 'Driving License', 'isUnlocked': false,'navigate':DrivingLicenseScreen()},
-    {'title': 'Vehicle RC', 'isUnlocked': false,'navigate':VehicleRcScreen()},
-    {'title': 'Add Vehicle', 'isUnlocked': false,'navigate':AddVehicleScreen()},
-    {'title': 'Identity Verification', 'isUnlocked': false,'navigate':IdentityVerificationScreen()},
-    {'title': 'Bank Details', 'isUnlocked': false,'navigate':AddBankAccountScreen()},
-  ];
+import 'Selfie_Screen.dart';
+import 'Driving_License_Screen.dart';
+import 'Add_Vehicle_RC.dart';
+import 'Add_Vehicle.dart';
+import 'Identify_Verification.dart';
+import 'Add_BankAccount.dart';
+
+class ActivationStepsScreen extends StatefulWidget {
+  @override
+  State<ActivationStepsScreen> createState() => _ActivationStepsScreen();
+}
+
+class _ActivationStepsScreen extends State<ActivationStepsScreen> {
+  bool profileSubmit = false;
+  bool DLSubmit = false;
+  bool profileValidate =false;
+  bool RCSubmit = false;
+  bool VehicleSubmit = false;
+  bool IdentitySubmit = false;
+  bool bankaccSubmit = false;
+  bool DLValidate =false;
+  bool RCValidate =false;
+  bool VehicleValidate =false;
+  bool IdentityValidate =false;
+  bool bankaccValidate =false;
+  bool profileRejected =false;
+  bool DLRejected =false;
+  bool RCRejected =false;
+  bool VehicleRejected =false;
+  bool IdentityRejected =false;
+  bool bankaccRejected =false;
+
+  String? phone_number;
+  @override
+  void initState() {
+    super.initState();
+    _getPhoneNumber();
+  }
+
+  // Fetch phone number and user booleans
+  Future<void> _getPhoneNumber() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      phone_number = prefs.getString('phone_number');
+      fetchAndUseUserBooleans(phone_number);
+    });
+    print('Retrieved phone number: $phone_number');
+  }
+
+  // Get the boolean values for each step
+  Future<Map<String, dynamic>?> getBooleanValues(String? phoneNumber) async {
+    final response = await http.get(
+      Uri.parse('http://10.0.2.2:3000/getBooleanValues/$phoneNumber'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      print("User Booleans: $data");
+      return data;
+    } else if (response.statusCode == 404) {
+      print("User not found");
+      return null;
+    } else {
+      throw Exception('Failed to fetch user boolean values');
+    }
+  }
+
+  // Set user booleans based on the response
+  void fetchAndUseUserBooleans(String? phoneNumber) async {
+    final userBooleans = await getBooleanValues(phoneNumber);
+    print(userBooleans);
+    if (userBooleans != null) {
+      setState(() {
+        profileSubmit = userBooleans['profilesubmit'] ?? false;
+        profileValidate = userBooleans['profilevalidate'] ?? false;
+        profileRejected = userBooleans['profilerejected'] ?? false;
+        DLValidate = userBooleans['DLvalidate'] ?? false;
+        DLSubmit = userBooleans['DLsubmit'] ?? false;
+        DLRejected = userBooleans['DLrejected'] ?? false;
+        RCValidate = userBooleans['RCvalidate'] ?? false;
+        RCSubmit = userBooleans['RCsubmit'] ?? false;
+        RCRejected = userBooleans['RCrejected'] ?? false;
+        VehicleSubmit = userBooleans['Vehiclesubmit'] ?? false;
+        VehicleValidate = userBooleans['Vehiclevalidate'] ?? false;
+        VehicleRejected = userBooleans['Vehiclerejected'] ?? false;
+        IdentitySubmit = userBooleans['Identitysubmit'] ?? false;
+        IdentityValidate = userBooleans['Identityvalidate'] ?? false;
+        IdentityRejected = userBooleans['Identityrejected'] ?? false;
+        bankaccSubmit = userBooleans['bankaccsubmit'] ?? false;
+        bankaccValidate = userBooleans['bankaccvalidate'] ?? false;
+        bankaccRejected = userBooleans['bankaccrejected'] ?? false;
+      });
+      print(profileValidate);
+      print(profileSubmit);
+      print(RCSubmit);
+      print(RCValidate);
+      print(RCRejected);
+    } else {
+      print("No data found for the provided phone number");
+    }
+  }
+
+  // Generate steps with dynamic unlock status based on the first incomplete step
+  List<Map<String, dynamic>> getSteps() {
+    final stepsData = [
+      {
+        'title': 'Profile Info',
+        'completed': profileSubmit,
+        'navigate': SelfieScreen(),
+        'status': profileSubmit & profileValidate ? 'accepted' : profileSubmit ? profileValidate ? 'accepted' : profileRejected ? 'rejected' : 'pending' : 'notsubmitted',
+      },
+      {
+        'title': 'Driving License',
+        'completed': DLSubmit,
+        'navigate': DrivingLicenseScreen(),
+        'status': DLSubmit & DLValidate ? 'accepted' : DLSubmit ? DLValidate ? 'accepted' : DLRejected ? 'rejected' : 'pending' : 'notsubmitted',
+      },
+      {
+        'title': 'Vehicle RC',
+        'completed': RCSubmit,
+        'navigate': VehicleRcScreen(),
+        'status': RCSubmit & RCValidate ? 'accepted' :( RCSubmit ? (RCValidate ? ('accepted') : (RCRejected ? 'rejected' : 'pending')) : 'notsubmitted'),
+      },
+      {
+        'title': 'Add Vehicle',
+        'completed': VehicleSubmit,
+        'navigate': AddVehicleScreen(),
+        'status': VehicleSubmit & VehicleValidate ? 'accepted' : VehicleSubmit ? VehicleValidate ? 'accepted' : VehicleRejected ? 'rejected' : 'pending' : 'notsubmitted',
+      },
+      {
+        'title': 'Identity Verification',
+        'completed': IdentitySubmit,
+        'navigate': IdentityVerificationScreen(),
+        'status': IdentitySubmit & IdentityValidate ? 'accepted' : IdentitySubmit ? IdentityValidate ? 'accepted' : IdentityRejected ? 'rejected' : 'pending' : 'notsubmitted',
+      },
+      {
+        'title': 'Bank Details',
+        'completed': bankaccSubmit,
+        'navigate': AddBankAccountScreen(),
+        'status': bankaccSubmit & bankaccValidate ? 'accepted' : bankaccSubmit ? bankaccValidate ? 'accepted' : bankaccRejected ? 'rejected' : 'pending' : 'notsubmitted',
+      },
+    ];
+
+    int firstIncompleteIndex = stepsData.indexWhere((step) => step['completed'] == false);
+    if (firstIncompleteIndex == -1) {
+      firstIncompleteIndex = stepsData.length;
+    }
+
+    for (int i = 0; i < stepsData.length; i++) {
+      bool completed = stepsData[i]['completed'] == true;
+      stepsData[i]['isUnlocked'] = i == firstIncompleteIndex && !completed;
+    }
+
+    return stepsData;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final steps = getSteps(); // Generate steps dynamically
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -48,10 +193,10 @@ class ActivationStepsScreen extends StatelessWidget {
           Container(
             color: Colors.blue.shade50,
             child: Padding(
-              padding: const EdgeInsets.only(left: 24,right: 24,top: 16,bottom: 16),
+              padding: const EdgeInsets.only(left: 24, right: 24, top: 16, bottom: 16),
               child: Text(
                 'Complete all the steps to activate your account',
-                style: TextStyle(fontSize: 22, color: Colors.indigo,fontWeight: FontWeight.w500),
+                style: TextStyle(fontSize: 22, color: Colors.indigo, fontWeight: FontWeight.w500),
               ),
             ),
           ),
@@ -61,9 +206,28 @@ class ActivationStepsScreen extends StatelessWidget {
               itemCount: steps.length,
               itemBuilder: (context, index) {
                 final step = steps[index];
+                String statusImage = '';
+
+                // Check the status and set the image accordingly
+                if (step['completed'] == true) {
+                  if (step['status'] == 'accepted') {
+                    statusImage = 'assets/Approved.png'; // Show nothing if accepted
+                  } else if (step['status'] == 'rejected') {
+                    statusImage = 'assets/Notverified.png';
+                  } else if (step['status'] == 'pending') {
+                    statusImage = 'assets/Exc.png'; // Show exclamation if pending but submitted
+                  }
+                  else if(step['status'] == 'notsubmitted'){
+                    statusImage='';
+                  }
+                }
+
                 return GestureDetector(
                   onTap: step['isUnlocked'] ? () {
-                    // Navigate to the corresponding step form
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => step['navigate']),
+                    );
                   } : null,
                   child: Padding(
                     padding: const EdgeInsets.only(left: 16),
@@ -72,10 +236,11 @@ class ActivationStepsScreen extends StatelessWidget {
                       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(12), border: Border.all(  // Add this line to set the border
-                        color: Colors.grey.shade300, // Set the border color (you can choose your desired color)
-                        width: 2, // Set the width of the border
-                      ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                          width: 2,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black12,
@@ -89,32 +254,32 @@ class ActivationStepsScreen extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              step['title'],
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: step['isUnlocked'] ? Colors.black : Colors.grey,
+                            Expanded(
+                              child: Text(
+                                step['title'],
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: step['isUnlocked'] ? Colors.black : Colors.grey,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            InkWell(
-
-                                onTap: () {
-                      if (step['isUnlocked']) {
-                      // Navigate to the screen specified in step['navigate']
-                      Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => step['navigate']),
-                      );
-                      } else {
-                      // Handle the case where the step is not unlocked (optional)
-
-                      }
-                      },
-                              child: Icon(
-                                step['isUnlocked'] ? Icons.arrow_forward : Icons.lock,
-                                color: step['isUnlocked'] ? Colors.blue : Colors.grey,
-                              ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (statusImage.isNotEmpty)
+                                  Image.asset(
+                                    statusImage,
+                                    width: 24, height: 24,
+                                    fit: BoxFit.contain,
+                                  ),
+                                SizedBox(width: 8),
+                                Icon(
+                                  step['isUnlocked'] ? Icons.arrow_forward : Icons.lock,
+                                  color: step['isUnlocked'] ? Colors.blue : Colors.grey,
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -126,97 +291,6 @@ class ActivationStepsScreen extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-
-
-
-
-
-
-
-
-// Driving License Page
-
-
-
-
-// Vehicle RC Page
-
-
-
-// Identity Verification Page
-
-
-// Add Bank Account Page
-
-// Documents Submitted Page
-class DocumentsSubmittedPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Center(
-              child:  Image.network(
-                'https://s3-alpha-sig.figma.com/img/be7b/48a5/1826d6fdc892aa501f37ac8fb16062bd?Expires=1732492800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=YB9Ggrm4jBAZ5Rp1swc24i9S8lMkJZjca2ZAiRHN9WF3GMTkh7KNwzhvra4-7SnUokt103tYYI7SisWSZzAzcBUHKMpPUH6ps~3mMSNgwA78HDM~3o0ELMK-xWvn9dhPOBCC9E4nFurcSlcWVkfubO30b0khkhLuLg8jkUJNZy8UX~HKrgzXhuT-iAspgD34hLIdMQvZD96Qr6ieIFF3B3JIbZQDok6wNlOG4UHzwPKeHA5Fpp924tYzmx1do4OZRO3CQwNBS6VhyC39QC2l2UXFMv0qf~szxEBKgg2ZJPZXU-N0nSSd5J9HcC1L5~QZ-CBrWmZulFIQcHjgqUoc4g__',
-                height: 150,
-                width: 150,
-              ),
-            ),
-            SizedBox(height: 24),
-            Text(
-              'Documents Submitted!',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'You will get a verification call on your registered phone number +91 123345567',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
-            SizedBox(height: 30),
-            Container(
-              width: 287,
-              height: 42,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Navigate back to the previous page
-                },
-                style: ElevatedButton.styleFrom(
-
-                  backgroundColor: Colors.white,
-                  side: BorderSide(color: Colors.indigoAccent),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  'Go back',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.indigoAccent,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

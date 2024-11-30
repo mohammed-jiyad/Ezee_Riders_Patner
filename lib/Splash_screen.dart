@@ -1,4 +1,4 @@
-import 'package:bikeapp/main.dart';
+import 'package:uiggeeks_driver/main.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 

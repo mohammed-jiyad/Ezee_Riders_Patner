@@ -1,21 +1,47 @@
-import 'package:bikeapp/Registration/Registration.dart';
-import 'package:bikeapp/Splash_screen.dart';
+import 'package:uiggeeks_driver/Registration/Registration.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'Splash_Screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+void main() async {
 
-void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
+    return ScreenUtilInit(
+      designSize: Size(360, 800), // Your Figma design dimensions
+      minTextAdapt: true, // Enables adaptive text resizing
+      splitScreenMode: true, // Handles split-screen scenarios
+      builder: (context, child) {
+        return MaterialApp(
+          theme: ThemeData(
+            primaryColor: Color(0xFFFFFFFF), // Primary color of the app
+            scaffoldBackgroundColor: Color(0xFFFFFFFF), // Default background color for screens
+            appBarTheme: AppBarTheme(
+              backgroundColor: Color(0xFFFFFFFF), // AppBar background color
+              elevation: 0, // Optional: Removes shadow
+              iconTheme: IconThemeData(color: Color(0xFF888888)), // AppBar icon color
+              titleTextStyle: TextStyle(
+                color: Color(0xFF888888),
+                fontSize: 20.sp, // Use ScreenUtil for responsive font size
+              ), // AppBar text style
+            ),
+          ),
+          debugShowCheckedModeBanner: false,
+          home: SplashScreen(), // Replace with your initial screen
+        );
+      },
     );
   }
 }
+
+// For JSON encoding and decoding
 
 class PhoneLoginScreen extends StatefulWidget {
   @override
@@ -26,7 +52,8 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
   final TextEditingController phoneController = TextEditingController();
   String selectedCountryCode = '+91'; // Default country code
 
-  // List of country codes for dropdown
+  final _formKey = GlobalKey<FormState>();
+
   final List<Map<String, String>> countryCodes = [
     {'name': 'India', 'code': '+91'},
     {'name': 'United States', 'code': '+1'},
@@ -35,68 +62,98 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
     {'name': 'Australia', 'code': '+61'},
   ];
 
-  // Function to validate phone number
-  bool isValidPhoneNumber(String phone) {
-    // Simple phone number validation (length check)
-    return phone.length >= 10;
+  String? validatePhoneNumber(String? phone) {
+    if (phone == null || phone.isEmpty) {
+      return 'Please enter your phone number';
+    } else if (phone.length !=10) {
+      return 'Phone number must be 10 digits';
+    }
+    return null;
+  }
+
+  Future<void> savePhoneNumber(String phoneNumber) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('phone_number', phoneNumber); // Store phone number
+  }
+
+  Future<bool> findUser(String phoneNumber) async {
+    final response = await http.get(Uri.parse('http://10.0.2.2:3000/findUser/$phoneNumber'));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['exists'] as bool;
+    } else {
+      throw Exception('Failed to find user');
+    }
+  }
+
+  Future<void> insertUser(String phoneNumber) async {
+    final response = await http.post(
+      Uri.parse('http://10.0.2.2:3000/insertUser'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'phonenumber': phoneNumber,
+      'profilesubmit':false,
+        'profilevalidate':false,
+        'profilerejected':false,
+        'DLsubmit':false,
+        'DLvalidate':false,
+        'DLrejected':false,
+        'RCsubmit':false,
+        'RCvalidate':false,
+        'RCrejected':false,
+        'Vehiclesubmit':false,
+        'Vehiclevalidate':false,
+        'Vehiclerejected':false,
+        'Identitysubmit':false,
+        'Identityvalidate':false,
+        'Identityrejected':false,
+        'bankaccsubmit':false,
+        'bankaccvalidate':false,
+        'bankaccrejected':false,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print(data['message']);
+    } else {
+      throw Exception('Failed to insert user');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.grey.shade100,
-        elevation: 0,
-
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-
-        children: [
-
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),  // Ensure the image is also clipped to match the border radius
-            child: Image.asset(
-              'assets/logo.png',  // Replace with your logo image
-              width: double.infinity  // Set a fixed height for the image
-                // Ensure the image scales properly without distortion
+      appBar: AppBar(backgroundColor: Colors.grey.shade100, elevation: 0),
+      body: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset('assets/logo.png', width: double.infinity),
             ),
-          ),
-
-          SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.only(left: 15),
-            child: Text(
-              'Enter Your Phone Number',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,),
+            SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.only(left: 15),
+              child: Text('Enter Your Phone Number', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             ),
-          ),
-          SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.only(left: 15),
-            child: Text(
-              "We'll send a verification code on this number.",
-              style: TextStyle(color: Colors.grey),
-              textAlign: TextAlign.center,
+            SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.only(left: 15),
+              child: Text("We'll send a verification code on this number.", style: TextStyle(color: Colors.grey), textAlign: TextAlign.center),
             ),
-          ),
-          SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.only(left: 15,right: 24),
-            child: Row(
-              children: [
-                // Country Code Dropdown with smaller size
-                Material(
-                  elevation:2,
-                  color: Colors.blueGrey.shade50,
-                  child: Container(
-                    width: 100,  // Adjust the width for a smaller dropdown
-                    padding: EdgeInsets.symmetric(horizontal: 4),  // Reduced padding
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+            SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.only(left: 15, right: 24),
+              child: Row(
+                children: [
+                  Container(
+                    width: 100,
+                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(border: Border.all(color: Colors.grey), borderRadius: BorderRadius.circular(8)),
                     child: DropdownButton<String>(
                       value: selectedCountryCode,
                       items: countryCodes.map((country) {
@@ -110,75 +167,58 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                           selectedCountryCode = value!;
                         });
                       },
-                      underline: SizedBox(), // Remove underline
-                      isExpanded: true,  // Make dropdown items take full width
+                      underline: SizedBox(),
+                      isExpanded: true,
                     ),
                   ),
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Material(
-                    elevation: 2,
-                    color: Colors.blueGrey.shade50,
-                    child: TextField(
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: TextFormField(
                       controller: phoneController,
                       keyboardType: TextInputType.phone,
                       decoration: InputDecoration(
                         hintText: 'Enter phone number',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 16),
-          Spacer(),
-          Padding(
-            padding: const EdgeInsets.only(left: 50),
-            child: Text(
-              "Please read our terms and condition before proceeding",
-              style: TextStyle(fontSize: 12, color: Colors.blueGrey),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 20,left: 24,right: 24),
-            child: ElevatedButton(
-              onPressed: () {
-                String phoneNumber = phoneController.text.trim();
-                if (phoneNumber.isNotEmpty && isValidPhoneNumber(phoneNumber)) {
-                  // Proceed to OTP Verification Screen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => OTPVerificationpage(phoneNumber)),
-                  );
-                } else {
-                  // Show error message
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Please enter a valid phone number.')),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.indigoAccent,
-                minimumSize: Size(double.infinity, 52),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12), // Makes the button squared
-                ),
+                ],
               ),
-              child: Text('Proceed',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
             ),
-          ),
-
-        ],
+            SizedBox(height: 16),
+            Spacer(),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20, left: 24, right: 24),
+              child: ElevatedButton(
+                onPressed: () async {
+                  String phoneNumber = phoneController.text.trim();
+                  String? validationMessage = validatePhoneNumber(phoneNumber);
+                  if (validationMessage != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(validationMessage)));
+                  } else {
+                    await savePhoneNumber('$phoneNumber');
+                    bool userExists = await findUser(phoneNumber);
+                    if (userExists) {
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => OTPVerificationpage('$selectedCountryCode$phoneNumber')));
+                    } else {
+                      await insertUser(phoneNumber);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User created")));
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => OTPVerificationpage('$selectedCountryCode$phoneNumber')));
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.indigoAccent, minimumSize: Size(double.infinity, 52), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                child: Text('Proceed', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+
+
 
 
 class OTPVerificationpage extends StatefulWidget {

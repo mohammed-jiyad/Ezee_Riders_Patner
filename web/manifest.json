@@ -1,6 +1,6 @@
 {
-    "name": "bikeapp",
-    "short_name": "bikeapp",
+    "name": "uiggeeks_driver",
+    "short_name": "uiggeeks_driver",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

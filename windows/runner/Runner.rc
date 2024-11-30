@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "bikeapp" "\0"
+            VALUE "FileDescription", "uiggeeks_driver" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "bikeapp" "\0"
+            VALUE "InternalName", "uiggeeks_driver" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "bikeapp.exe" "\0"
-            VALUE "ProductName", "bikeapp" "\0"
+            VALUE "OriginalFilename", "uiggeeks_driver.exe" "\0"
+            VALUE "ProductName", "uiggeeks_driver" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
