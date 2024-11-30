@@ -1,9 +1,94 @@
 import 'package:bikeapp/Registration/AddVehicle.dart';
 import 'package:bikeapp/Registration/DrivingLicenseScreen.dart';
-import 'package:bikeapp/Registration/Registration.dart';
 import 'package:flutter/material.dart';
-import 'package:dotted_border/dotted_border.dart';
-class VehicleRcScreen extends StatelessWidget {
+
+class VehicleRcScreen extends StatefulWidget {
+  @override
+  _VehicleRcScreenState createState() => _VehicleRcScreenState();
+}
+
+class _VehicleRcScreenState extends State<VehicleRcScreen> {
+  bool isOwnershipDropdownOpen = false;
+  bool isVehicleTypeDropdownOpen = false;
+
+  String? selectedOwnership;
+  String? selectedVehicleType;
+
+  void toggleOwnershipDropdown() {
+    setState(() {
+      isOwnershipDropdownOpen = !isOwnershipDropdownOpen;
+    });
+  }
+
+  void toggleVehicleTypeDropdown() {
+    setState(() {
+      isVehicleTypeDropdownOpen = !isVehicleTypeDropdownOpen;
+    });
+  }
+
+  Widget _buildCustomDropdown({
+    required String label,
+    required List<String> items,
+    required Function(String?) onChanged,
+    String? selectedValue,
+    required bool isDropdownOpen,
+    required Function toggleDropdown,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          ),
+          SizedBox(height: 8),
+          Container(
+            color: Colors.blueGrey.shade50,
+            child: GestureDetector(
+              onTap: () => toggleDropdown(),
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      selectedValue ?? 'Select $label',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                    Icon(isDropdownOpen
+                        ? Icons.arrow_drop_up
+                        : Icons.arrow_drop_down),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (isDropdownOpen)
+            Container(
+              height: 100, // Set dropdown height
+              color: Colors.white,
+              child: ListView(
+                children: items.map((String value) {
+                  return ListTile(
+                    title: Text(value),
+                    onTap: () {
+                      onChanged(value);
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,75 +117,37 @@ class VehicleRcScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 16),
-              Text(
-                'Vehicle Ownership',
-                style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500),
-              ),
-              SizedBox(height: 8),
-              Container(
-                color: Colors.blueGrey.shade50,
-                child: DropdownButtonFormField<String>(
-                  items: ['Self', 'Rented'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Center(
-                        child: Text(
-                          value,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (value) {},
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-                    hintText: 'Select',
-                    hintStyle: TextStyle(
-                      fontSize: 16,
-
-                    ),
-                  ),
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                  ),
-                  icon: Icon(Icons.arrow_drop_down),
-                  isExpanded: true,
-                  menuMaxHeight: 200,
-                ),
+              _buildCustomDropdown(
+                label: 'Vehicle Ownership',
+                items: ['Self', 'Rented'],
+                onChanged: (value) {
+                  setState(() {
+                    selectedOwnership = value;
+                    isOwnershipDropdownOpen = false;
+                  });
+                },
+                selectedValue: selectedOwnership,
+                isDropdownOpen: isOwnershipDropdownOpen,
+                toggleDropdown: toggleOwnershipDropdown,
               ),
               SizedBox(height: 16),
-              Text(
-                'Vehicle Type',
-                style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500),
-              ),
-              SizedBox(height: 8),
-              Container(
-                color: Colors.blueGrey.shade50,
-                child: DropdownButtonFormField<String>(
-                  items: ['Bike','Scooty'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {},
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-                    hintText: 'Select',
-                    hintStyle: TextStyle(
-                      fontSize: 16,
-
-                    ),
-                  ),
-                ),
+              _buildCustomDropdown(
+                label: 'Vehicle Type',
+                items: ['Bike', 'Scooty'],
+                onChanged: (value) {
+                  setState(() {
+                    selectedVehicleType = value;
+                    isVehicleTypeDropdownOpen = false;
+                  });
+                },
+                selectedValue: selectedVehicleType,
+                isDropdownOpen: isVehicleTypeDropdownOpen,
+                toggleDropdown: toggleVehicleTypeDropdown,
               ),
               SizedBox(height: 16),
               Text(
                 'Vehicle Number',
-                style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
               ),
               SizedBox(height: 8),
               Container(
@@ -109,7 +156,6 @@ class VehicleRcScreen extends StatelessWidget {
                   decoration: InputDecoration(
                     labelText: 'Enter vehicle number',
                     border: OutlineInputBorder(),
-
                   ),
                 ),
               ),
@@ -119,13 +165,13 @@ class VehicleRcScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(height: 16),
-              UploadSection(title: 'Upload Front'),
-              SizedBox(height: 16),
-              UploadSection(title: 'Upload Back'),
+              UploadSection(title: 'Upload'),
+              // Add UploadSection or similar widget if required.
               SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=> AddVehicleScreen()));
+                  Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => AddVehicleScreen()));
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: Size(double.infinity, 50),
@@ -136,7 +182,7 @@ class VehicleRcScreen extends StatelessWidget {
                 ),
                 child: Text(
                   'Submit',
-                  style: TextStyle(fontSize: 16,color: Colors.white),
+                  style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
               ),
             ],
