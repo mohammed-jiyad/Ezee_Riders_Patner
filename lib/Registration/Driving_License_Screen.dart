@@ -5,11 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:typed_data';
 import 'dart:io';
 import 'Add_Vehicle_RC.dart'; // For the next screen navigation
-import 'Registration.dart';
+
 import 'package:http/http.dart'as http;
 import 'dart:convert';
-
-import 'package:uiggeeks_driver/Registration/Add_Vehicle_RC.dart';// For the next screen navigation
+import 'package:uig/utils/serverlink.dart';
+// For the next screen navigation
 
 class DrivingLicenseScreen extends StatefulWidget {
   @override
@@ -37,7 +37,7 @@ class _DrivingLicenseScreen extends State<DrivingLicenseScreen> {
     print('Retrieved phone number: $phone_number'); // Print for debugging
   }
   Future<void> _updateProfileInDatabase(String licensnumber) async {
-    final url = 'http://10.0.2.2:3000/addFieldToUser'; // Replace with your backend URL
+    final url = '${server.link}/addFieldToUser'; // Replace with your backend URL
 
     final response = await http.post(
       Uri.parse(url),
@@ -178,7 +178,9 @@ class _DrivingLicenseScreen extends State<DrivingLicenseScreen> {
                 ),
                 child: Text(
                   'Submit',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
+                  style: TextStyle(fontSize: 16, color: Colors.white),softWrap: false,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -209,17 +211,17 @@ class _UploadSectionState extends State<UploadSection> {
     _getPhoneNumber();
   }
 
-  // Function to pick and upload a file
+
   void pickFile() async {
     try {
-      // Show file picker dialog
+
       FilePickerResult? result = await FilePicker.platform.pickFiles();
 
       if (result != null) {
-        // Get the selected file
+
         PlatformFile file = result.files.first;
 
-        // Check file size (limit: 2MB)
+
         if (file.size > 2 * 1024 * 1024) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("File size exceeds 2 MB. Please select a smaller file.")),
@@ -227,7 +229,7 @@ class _UploadSectionState extends State<UploadSection> {
           return;
         }
 
-        // Update UI with file name and path
+
         setState(() {
           fileName = file.name;
           filepath = file.path;
@@ -237,12 +239,12 @@ class _UploadSectionState extends State<UploadSection> {
         print('File Path: ${file.path}');
         print('File Size: ${file.size} bytes');
 
-        // Upload file if phone number is available
+
         if (filepath != null && phoneNumber != null) {
           File fileObj = File(filepath!);
           Uint8List fileData = await fileObj.readAsBytes();
 
-          // Send the file to the server with the upload title
+
           await uploadFileToServer(phoneNumber!, fileData, file.name, widget.title);
         }
       } else {
@@ -253,26 +255,26 @@ class _UploadSectionState extends State<UploadSection> {
     }
   }
 
-  // Retrieve the phone number from SharedPreferences
+
   Future<void> _getPhoneNumber() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      phoneNumber = prefs.getString('phone_number'); // Retrieve the phone number
+      phoneNumber = prefs.getString('phone_number');
     });
-    print('Retrieved phone number: $phoneNumber'); // Print for debugging
+    print('Retrieved phone number: $phoneNumber');
   }
 
-  // Function to upload file to the server with title
+
   Future<void> uploadFileToServer(String phoneNumber, Uint8List fileData, String fileName, String title) async {
     try {
-      var uri = Uri.parse("http://10.0.2.2:3000/uploadFileForUser"); // Replace with your server URL
+      var uri = Uri.parse("${server.link}/uploadFileForUser");
 
       var request = http.MultipartRequest('POST', uri)
-        ..fields['phoneNumber'] = phoneNumber // Add the phone number to the fields
-        ..fields['uploadTitle'] = title // Add the upload title to the fields
-        ..files.add(http.MultipartFile.fromBytes('file', fileData, filename: fileName)); // Attach the file with its name
+        ..fields['phoneNumber'] = phoneNumber
+        ..fields['uploadTitle'] = title
+        ..files.add(http.MultipartFile.fromBytes('file', fileData, filename: fileName));
 
-      // Send the request
+
       var response = await request.send();
 
       if (response.statusCode == 200) {
@@ -328,7 +330,7 @@ class _UploadSectionState extends State<UploadSection> {
                       Padding(
                         padding: EdgeInsets.only(left: 8),
                         child: ElevatedButton(
-                          onPressed: pickFile, // Pick file on button click
+                          onPressed: pickFile,
                           child: Text('Browse'),
                         ),
                       ),

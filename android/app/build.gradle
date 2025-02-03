@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.uiggeeks_driver"
+    namespace = "com.example.uig"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,24 +21,56 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.uiggeeks_driver"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        applicationId = "com.ezee.uig"
+        multiDexEnabled
+        minSdkVersion 21
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
-
-    buildTypes {
+    signingConfigs {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.debug
+            keyAlias 'your-key-alias'
+            keyPassword 'driver'
+            storeFile file('C:/Projects/uig/android/app/release-key.jks') // Adjust path to your keystore file
+            storePassword 'driver'
         }
     }
+    buildTypes {
+        release {
+            minifyEnabled false // Disable minification
+            shrinkResources false
+            signingConfig signingConfigs.release
+        }
+    }
+
 }
 
 flutter {
     source = "../.."
+}
+dependencies {
+
+    implementation 'com.google.android.gms:play-services-maps:19.0.0'
+
+
+    implementation 'com.google.android.gms:play-services-cronet:18.1.0'
+
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.20"
+
+
+    implementation 'com.google.android.gms:play-services-base:18.5.0'
+
+    implementation 'com.google.android.gms:play-services-location:21.3.0'
+
+    implementation 'org.chromium.net:cronet-embedded:119.6045.31'
+    // Update version as necessary
+
+
+
+    implementation 'com.google.flogger:flogger:0.7.4'
+    implementation 'com.google.flogger:flogger-system-backend:0.7.4'
+
+
 }

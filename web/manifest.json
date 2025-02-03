@@ -1,6 +1,6 @@
 {
-    "name": "uiggeeks_driver",
-    "short_name": "uiggeeks_driver",
+    "name": "uig",
+    "short_name": "uig",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

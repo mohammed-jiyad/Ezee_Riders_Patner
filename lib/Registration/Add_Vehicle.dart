@@ -1,10 +1,11 @@
-import 'Driving_License_Screen.dart';
+
 import 'Identify_Verification.dart';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:http/http.dart'as http;
+import 'package:uig/utils/serverlink.dart';
 class AddVehicleScreen extends StatefulWidget {
   @override
   _AddVehicleScreenState createState() => _AddVehicleScreenState();
@@ -36,7 +37,10 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
     print('Retrieved phone number: $phone_number'); // Print for debugging
   }
   Future<void> _updateProfileInDatabase(String? Vehiclecompany,String? modelnumber,String? color,String? Year) async {
-    final url = 'http://10.0.2.2:3000/addFieldToUser'; // Replace with your backend URL
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('VehicleCompany',Vehiclecompany.toString());
+
+    final url = '${server.link}/addFieldToUser'; // Replace with your backend URL
 
     final response = await http.post(
       Uri.parse(url),
@@ -225,7 +229,9 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                 onPressed: _submitForm,
                 child: Text(
                   'Submit',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.white),softWrap: false,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.indigoAccent,

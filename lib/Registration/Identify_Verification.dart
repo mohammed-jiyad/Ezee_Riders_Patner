@@ -1,10 +1,62 @@
 import 'Add_BankAccount.dart';
 import 'Driving_License_Screen.dart';
-import 'Registration.dart';
+
 import 'package:flutter/material.dart';
-import 'package:dotted_border/dotted_border.dart';
-import 'package:uiggeeks_driver/Registration/Add_BankAccount.dart';
-class IdentityVerificationScreen extends StatelessWidget {
+
+import 'package:http/http.dart'as http;
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uig/utils/serverlink.dart';
+class IdentityVerificationScreen extends StatefulWidget{
+  @override
+  State<IdentityVerificationScreen> createState()=> _IdentityVerificationScreen();
+
+}
+class _IdentityVerificationScreen extends State<IdentityVerificationScreen> {
+  String? phone_number;
+  void initState() {
+    super.initState();
+    _getPhoneNumber(); // Ensure phone number is fetched
+  }
+  Future<void> _getPhoneNumber() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      phone_number = prefs.getString('phone_number');
+    });
+    // Retrieve the phone number
+    print('Retrieved phone number: $phone_number'); // Print for debugging
+  }
+  Future<void> _updateProfileInDatabase() async {
+    final url = '${server.link}/addFieldToUser'; // Replace with your backend URL
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'phonenumber': phone_number,
+        'userData': {
+
+          'Identitysubmit':true,
+        },
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print("Profile updated successfully!");
+      // Navigate to the next screen
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => IdentityVerificationScreen()),
+      );
+    } else {
+      print("Failed to update profile. Status Code: ${response.statusCode}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error saving account: ${response.body}")),
+      );
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,17 +85,18 @@ class IdentityVerificationScreen extends StatelessWidget {
               SizedBox(height: 20),
               Text('Aadhaar Card Images',style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500),),
               SizedBox(height: 10),
-              UploadSection(title: 'Upload Front, Browse'),
+              UploadSection(title: 'Aadhaar Upload Front'),
               SizedBox(height: 10),
-              UploadSection(title: 'Upload Back, Browse'),
+              UploadSection(title: 'Aadhaar Upload Back'),
               SizedBox(height: 20),
               Text('PAN Card Images',style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500),),
               SizedBox(height: 10),
-              UploadSection(title: 'Upload Front, Browse'),
+              UploadSection(title: 'Pan Card Upload Front'),
               SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async{
+                    await _updateProfileInDatabase();
                     Navigator.of(context).push(MaterialPageRoute(builder: (context)=> AddBankAccountScreen()));
                   },
                   style: ElevatedButton.styleFrom(
@@ -55,7 +108,9 @@ class IdentityVerificationScreen extends StatelessWidget {
                   ),
                   child: Text(
                     'Submit',
-                    style: TextStyle(fontSize: 16,color: Colors.white),
+                    style: TextStyle(fontSize: 16,color: Colors.white),softWrap: false,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),

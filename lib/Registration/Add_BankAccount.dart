@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:uig/utils/serverlink.dart';
 import 'Documents_Submit.dart';
 
 class AddBankAccountScreen extends StatefulWidget {
@@ -43,7 +43,7 @@ class _AddBankAccountScreenState extends State<AddBankAccountScreen> {
   }
 
   Future<void> _updateProfileInDatabase() async {
-    final url = 'http://10.0.2.2:3000/addFieldToUser';
+    final url = '${server.link}/addFieldToUser';
 
     // Collect data from text fields
     final accountHolderName = _accountHolderNameController.text.trim();
@@ -90,10 +90,10 @@ class _AddBankAccountScreenState extends State<AddBankAccountScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text('Step 6/6', style: TextStyle(color: Colors.black)),
+        title: const Text('Step 6/6', style: TextStyle(color: Colors.black)),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -106,16 +106,16 @@ class _AddBankAccountScreenState extends State<AddBankAccountScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Add Bank Account',
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 16),
-              Text(
+              const SizedBox(height: 16),
+              const Text(
                 'Name of the Account Holder',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               TextFormField(
                 controller: _accountHolderNameController,
                 decoration: InputDecoration(
@@ -126,7 +126,7 @@ class _AddBankAccountScreenState extends State<AddBankAccountScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.indigoAccent),
+                    borderSide: const BorderSide(color: Colors.indigoAccent),
                   ),
                 ),
                 validator: (value) {
@@ -136,12 +136,12 @@ class _AddBankAccountScreenState extends State<AddBankAccountScreen> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
-              Text(
+              const SizedBox(height: 16),
+              const Text(
                 'Enter IFSC Code',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               TextFormField(
                 controller: _ifscCodeController,
                 decoration: InputDecoration(
@@ -152,7 +152,7 @@ class _AddBankAccountScreenState extends State<AddBankAccountScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.indigoAccent),
+                    borderSide: const BorderSide(color: Colors.indigoAccent),
                   ),
                 ),
                 validator: (value) {
@@ -162,12 +162,12 @@ class _AddBankAccountScreenState extends State<AddBankAccountScreen> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
-              Text(
+              const SizedBox(height: 16),
+              const Text(
                 'Enter Account Number',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               TextFormField(
                 controller: _accountNumberController,
                 decoration: InputDecoration(
@@ -178,7 +178,7 @@ class _AddBankAccountScreenState extends State<AddBankAccountScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.indigoAccent),
+                    borderSide: const BorderSide(color: Colors.indigoAccent),
                   ),
                 ),
                 keyboardType: TextInputType.number,
@@ -189,7 +189,7 @@ class _AddBankAccountScreenState extends State<AddBankAccountScreen> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Text(
                 'Confirm Account Number',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
@@ -232,7 +232,9 @@ class _AddBankAccountScreenState extends State<AddBankAccountScreen> {
                 ),
                 child: Text(
                   'Submit',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
+                  style: TextStyle(fontSize: 16, color: Colors.white),softWrap: false,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

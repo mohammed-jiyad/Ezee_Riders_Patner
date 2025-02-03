@@ -1,13 +1,13 @@
 import 'Profile_Screen.dart';
-import 'Registration.dart';
+
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uig/utils/serverlink.dart';
 class SelfieScreen extends StatefulWidget {
   @override
   _SelfieScreenState createState() => _SelfieScreenState();
@@ -33,7 +33,7 @@ class _SelfieScreenState extends State<SelfieScreen> {
   }
   Future<void> uploadFileToServer(String? phoneNumber, Uint8List fileData, String fileName, String title) async {
     try {
-      var uri = Uri.parse("http://10.0.2.2:3000/uploadFileForUser");
+      var uri = Uri.parse("${server.link}/uploadFileForUser");
 
       var request = http.MultipartRequest('POST', uri)
         ..fields['phoneNumber'] = phoneNumber.toString()
@@ -75,13 +75,13 @@ class _SelfieScreenState extends State<SelfieScreen> {
 
   Future<Uint8List> captureImageAsBytes() async {
     try {
-      // Ensure the controller is initialized
+
       await _initializeControllerFuture;
 
-      // Capture the image
+
       final image = await _cameraController.takePicture();
 
-      // Read the image as bytes
+
       final imageFile = File(image.path);
       final Uint8List imageBytes = await imageFile.readAsBytes();
 

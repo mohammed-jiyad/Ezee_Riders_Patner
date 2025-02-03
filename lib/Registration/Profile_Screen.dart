@@ -4,7 +4,8 @@ import 'Driving_License_Screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:uig/utils/serverlink.dart';
 class ProfileFormPage extends StatefulWidget {
   @override
   State<ProfileFormPage> createState() => ProfileFormPageState();
@@ -44,7 +45,9 @@ class ProfileFormPageState extends State<ProfileFormPage> {
 
   Future<void> _updateProfileInDatabase(String fullName, String email,
       String referralCode, String gender, String? dateOfBirth) async {
-    final url = 'http://10.0.2.2:3000/addFieldToUser';
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('DriverName',fullName);
+    final url = '${server.link}/addFieldToUser';
 
     final response = await http.post(
       Uri.parse(url),
@@ -257,14 +260,19 @@ class ProfileFormPageState extends State<ProfileFormPage> {
               buildTextField('Referral Code', 'xxxxxx', _referralCodeController, isReferralCode: true),
               SizedBox(height: 3),
               Center(
-                child: ElevatedButton(
-                  onPressed: _saveForm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF4257D3),
-                    padding: const EdgeInsets.symmetric(horizontal: 150, vertical: 15),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: SizedBox(
+
+                  child: ElevatedButton(
+                    onPressed: _saveForm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF4257D3),
+                      padding: EdgeInsets.symmetric(horizontal: 150, vertical: 15),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text('Submit', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),softWrap: false,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,),
                   ),
-                  child: Text('Submit', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],

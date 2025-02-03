@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:uig/features/explore/screens/explore.dart';
 import 'dart:convert';
-
+import 'package:uig/utils/serverlink.dart';
 import 'Selfie_Screen.dart';
 import 'Driving_License_Screen.dart';
 import 'Add_Vehicle_RC.dart';
@@ -39,9 +40,12 @@ class _ActivationStepsScreen extends State<ActivationStepsScreen> {
   @override
   void initState() {
     super.initState();
-    _getPhoneNumber();
+    sequence();
   }
-
+  void sequence() async{
+    await _getPhoneNumber();
+    check();
+  }
   // Fetch phone number and user booleans
   Future<void> _getPhoneNumber() async {
     final prefs = await SharedPreferences.getInstance();
@@ -51,11 +55,16 @@ class _ActivationStepsScreen extends State<ActivationStepsScreen> {
     });
     print('Retrieved phone number: $phone_number');
   }
-
+  void check(){
+    if(profileValidate==true &&DLValidate==true && RCValidate==true && VehicleValidate==true && IdentityValidate==true && bankaccValidate==true){
+      print("$profileValidate, $DLValidate ,$RCValidate ,$VehicleValidate,$IdentityValidate,$bankaccValidate");
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>ExploreScreen()));
+    }
+  }
   // Get the boolean values for each step
   Future<Map<String, dynamic>?> getBooleanValues(String? phoneNumber) async {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:3000/getBooleanValues/$phoneNumber'),
+      Uri.parse('${server.link}/getBooleanValues/$phoneNumber'),
     );
 
     if (response.statusCode == 200) {
@@ -71,7 +80,7 @@ class _ActivationStepsScreen extends State<ActivationStepsScreen> {
   }
 
   // Set user booleans based on the response
-  void fetchAndUseUserBooleans(String? phoneNumber) async {
+  Future<void> fetchAndUseUserBooleans(String? phoneNumber) async {
     final userBooleans = await getBooleanValues(phoneNumber);
     print(userBooleans);
     if (userBooleans != null) {
@@ -96,10 +105,11 @@ class _ActivationStepsScreen extends State<ActivationStepsScreen> {
         bankaccRejected = userBooleans['bankaccrejected'] ?? false;
       });
       print(profileValidate);
-      print(profileSubmit);
-      print(RCSubmit);
+      print(DLValidate);
       print(RCValidate);
-      print(RCRejected);
+      print(VehicleValidate);
+      print(IdentityValidate);
+      print(bankaccValidate);
     } else {
       print("No data found for the provided phone number");
     }

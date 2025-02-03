@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-import 'package:uiggeeks_driver/Registration/Add_Vehicle.dart';
+import 'package:uig/utils/serverlink.dart';
 class VehicleRcScreen extends StatefulWidget {
   @override
   _VehicleRcScreenState createState() => _VehicleRcScreenState();
@@ -76,7 +75,10 @@ class _VehicleRcScreenState extends State<VehicleRcScreen> {
     }
   }
   Future<void> _updateProfileInDatabase(String vehiclenumber,String? ownership,String? vehicletype) async {
-    final url = 'http://10.0.2.2:3000/addFieldToUser'; // Replace with your backend URL
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('VehicleNumber',vehiclenumber);
+    await prefs.setString('VehicleType',vehicletype.toString());
+    final url = '${server.link}/addFieldToUser'; // Replace with your backend URL
 
     final response = await http.post(
       Uri.parse(url),
@@ -277,7 +279,9 @@ class _VehicleRcScreenState extends State<VehicleRcScreen> {
                 ),
                 child: Text(
                   'Submit',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
+                  style: TextStyle(fontSize: 16, color: Colors.white),softWrap: false,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
