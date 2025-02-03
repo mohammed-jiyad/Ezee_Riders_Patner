@@ -1,16 +1,27 @@
-# uig
+# Ezee Riders - Partner Application
 
-A new Flutter project.
+Welcome to Ezee Riders – the ultimate ride-hailing service that connects drivers with passengers seamlessly! This app is designed for partner drivers who want to earn on their own terms by providing safe and reliable transportation.
 
-## Getting Started
+📌 About the App
+Ezee Riders - Partner Application allows drivers to:
+✔ Accept and complete ride requests
+✔ Track earnings and trip history
+✔ Navigate efficiently with in-app GPS
+✔ Manage availability with an online/offline toggle
+✔ Receive customer ratings and feedback
 
-This project is a starting point for a Flutter application.
+🚀 Getting Started
+1️⃣ Requirements
+Before installing the app, ensure you have:
+✅ An active Ezee Riders driver account
+✅ A smartphone with Android
+✅ A stable internet connection
+✅ A registered vehicle that meets Ezee Riders’ standards
 
-A few resources to get you started if this is your first Flutter project:
+2️⃣ Installation
+Download the app from our Website https://ezeeriders.in/.
+Sign in with your registered driver credentials.
+Complete setup by updating your vehicle details and preferences.
+Start accepting rides and earning money!
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
